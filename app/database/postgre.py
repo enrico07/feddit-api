@@ -3,7 +3,9 @@ from datetime import datetime
 import psycopg
 import yaml
 from psycopg.rows import dict_row
+import os
 
+DATABASE_URL = os.getenv("DATABASE_URI")
 
 class PostgreClient:
     def __init__(self):
@@ -11,11 +13,7 @@ class PostgreClient:
 
     @staticmethod
     def _connect_to_db() -> None:
-        with open("app/config.yaml", "r") as file:
-            config = yaml.safe_load(file)
-        DB_CONFIG = config.get("database", {})
-
-        conn = psycopg.connect(**DB_CONFIG)
+        conn = psycopg.connect(DATABASE_URL)
         cursor = conn.cursor(row_factory=dict_row)
 
         return cursor, conn

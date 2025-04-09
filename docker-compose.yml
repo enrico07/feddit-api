@@ -31,3 +31,21 @@ services:
     depends_on:
       - db
     platform: linux/amd64
+  feddit-api:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URI: "postgresql://postgres:mysecretpassword@db:5432/postgres"
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    links:
+      - "db:db"
+    depends_on:
+      - db
+    platform: linux/amd64
