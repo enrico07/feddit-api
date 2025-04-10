@@ -44,7 +44,7 @@ class CommentsHandler:
 
         return polarity, polarity_classification
 
-    def get_comments(
+    async def get_comments(
         self,
         subfeddit_name: str,
         from_date: Optional[str] = None,
@@ -71,10 +71,12 @@ class CommentsHandler:
             List[dict]: A list of comments with sentiment analysis results and optional filters applied.
         """
         # Retrieve the ID of the subfeddit from the database
-        subfeddit_id = self.db_client.get_subfeddit_id(subfeddit_name=subfeddit_name)
+        subfeddit_id = await self.db_client.get_subfeddit_id(
+            subfeddit_name=subfeddit_name
+        )
 
         # Retrieve the comments from the database for the given subfeddit, with optional filters
-        retrieved_comments = self.db_client.get_comments(
+        retrieved_comments = await self.db_client.get_comments(
             subfeddit_id=subfeddit_id,
             from_date=from_date,
             to_date=to_date,

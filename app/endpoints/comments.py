@@ -1,20 +1,29 @@
 import traceback
+from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException
 
 from app.handlers.comments_handler import CommentsHandler
 from app.schemas.comment_schema import Comment
-
-# Creating an instance of APIRouter to define routes in the application
-router = APIRouter()
 
 # Creating an instance of CommentsHandler to handle comment-related functionality
 comments_handler = CommentsHandler()
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: connect to DB
+    await comments_handler.db_client.connect_to_db()
+    yield
+
+
+# Creating an instance of APIRouter to define routes in the application
+router = APIRouter(lifespan=lifespan)
+
+
 @router.get("/comments", response_model=List[Comment])
-def get_comments(
+async def get_comments(
     subfeddit_name: str,
     n_comments: Optional[int] = 25,
     from_date: Optional[str] = None,
@@ -43,7 +52,7 @@ def get_comments(
     """
     try:
         # Call the CommentsHandler's get_comments method to fetch the comments with the specified filters
-        comments = comments_handler.get_comments(
+        comments = await comments_handler.get_comments(
             subfeddit_name=subfeddit_name,
             from_date=from_date,
             to_date=to_date,
