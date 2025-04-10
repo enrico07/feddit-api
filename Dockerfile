@@ -8,7 +8,7 @@ RUN apt update && apt install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy all the files from application folder, path for cdk deploy
+# Copy all the files from application folder
 COPY ["app", "."]
 COPY requirements.txt .
 
