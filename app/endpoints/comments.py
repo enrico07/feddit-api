@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
 
@@ -6,16 +7,11 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from app.handlers.comments_handler import CommentsHandler
 from app.schemas.comment_schema import Comment
 
-import logging
-
 # Configure the logger
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("app.log", mode='a')
-    ]
+    handlers=[logging.StreamHandler(), logging.FileHandler("app.log", mode="a")],
 )
 logger = logging.getLogger(__name__)
 
@@ -27,7 +23,7 @@ comments_handler = CommentsHandler()
 async def lifespan(app: FastAPI):
     # Startup: connect to DB
     logger.info("Connecting to the database...")
-    
+
     await comments_handler.db_client.connect_to_db()
     yield
 
@@ -64,9 +60,11 @@ async def get_comments(
     Raises:
         HTTPException: If an unexpected error occurs during the process, a 500 error is raised.
     """
-    logger.info(f"Fetching comments for subfeddit: {subfeddit_name} with filters: "
-                f"n_comments={n_comments}, from_date={from_date}, to_date={to_date}, "
-                f"polarity_sorting={polarity_sorting}, min_polarity={min_polarity}, max_polarity={max_polarity}")
+    logger.info(
+        f"Fetching comments for subfeddit: {subfeddit_name} with filters: "
+        f"n_comments={n_comments}, from_date={from_date}, to_date={to_date}, "
+        f"polarity_sorting={polarity_sorting}, min_polarity={min_polarity}, max_polarity={max_polarity}"
+    )
     try:
         # Call the CommentsHandler's get_comments method to fetch the comments with the specified filters
         comments = await comments_handler.get_comments(
