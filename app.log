@@ -1,0 +1,3 @@
+2025-04-10 11:46:54,918 - app.endpoints.comments - INFO - Connecting to the database...
+2025-04-10 11:47:13,830 - app.endpoints.comments - INFO - Fetching comments for subfeddit: Dummy Topic 1 with filters: n_comments=20000, from_date=None, to_date=None, polarity_sorting=None, min_polarity=0.5, max_polarity=1.0
+2025-04-10 11:47:16,282 - app.endpoints.comments - INFO - Successfully fetched 6593 comments
