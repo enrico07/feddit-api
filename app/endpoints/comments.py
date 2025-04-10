@@ -5,7 +5,7 @@ from typing import List, Literal, Optional
 from fastapi import APIRouter, FastAPI, HTTPException
 
 from app.handlers.comments_handler import CommentsHandler
-from app.schemas.comment_schema import Comment
+from app.schemas.comment_schema import Comment, ErrorResponse
 
 # Configure the logger
 logging.basicConfig(
@@ -32,6 +32,17 @@ async def lifespan(app: FastAPI):
 router = APIRouter(lifespan=lifespan)
 
 
+@router.get(
+    "/comments",
+    response_model=List[Comment],
+    responses={
+        400: {
+            "model": ErrorResponse,
+            "description": "Bad Request (Invalid Parameters)",
+        },
+        500: {"model": ErrorResponse, "description": "Internal Server Error"},
+    },
+)
 @router.get("/comments", response_model=List[Comment])
 async def get_comments(
     subfeddit_name: str,
@@ -45,19 +56,20 @@ async def get_comments(
     """
     Fetches a list of comments for a given subfeddit with optional filters such as date range, polarity range, and sorting.
 
-    Args:
+    Args:\n
         subfeddit_name (str): The name of the subfeddit whose comments are to be fetched.
         n_comments (Optional[int]): The number of comments to retrieve. Default is 25.
-        from_date (Optional[str]): The start date for filtering comments (optional).
-        to_date (Optional[str]): The end date for filtering comments (optional).
-        polarity_sorting (Optional[Literal["asc", "desc"]]): Sorting order for comments by polarity (optional).
-        min_polarity (Optional[float]): Minimum polarity value for filtering comments (default is -1).
-        max_polarity (Optional[float]): Maximum polarity value for filtering comments (default is 1).
+        from_date (Optional[str]): The start date for filtering comments (optional). The date format must be DD-MM-YYYY.
+        to_date (Optional[str]): The end date for filtering comments (optional). The date format must be DD-MM-YYYY.
+        polarity_sorting (Optional[Literal["asc", "desc"]]): Sorting order for comments by polarity (optional). The value can be "asc" for ascending or "desc" for descending order.
+        min_polarity (Optional[float]): Minimum polarity value for filtering comments (default is -1). The value must be between -1 and 1.
+        max_polarity (Optional[float]): Maximum polarity value for filtering comments (default is 1). The value must be between -1 and 1.
 
-    Returns:
+    Returns:\n
         List[Comment]: A list of comments that match the filtering criteria.
 
-    Raises:
+    Raises:\n
+        HTTPException: If a wrong value is sent as parameter, a 400 error is raised.
         HTTPException: If an unexpected error occurs during the process, a 500 error is raised.
     """
     logger.info(
@@ -65,6 +77,18 @@ async def get_comments(
         f"n_comments={n_comments}, from_date={from_date}, to_date={to_date}, "
         f"polarity_sorting={polarity_sorting}, min_polarity={min_polarity}, max_polarity={max_polarity}"
     )
+
+    # Ensure min_polarity and max_polarity are within the valid range
+    if min_polarity < -1 or min_polarity > 1:
+        raise HTTPException(
+            status_code=400, detail="min_polarity must be between -1 and 1"
+        )
+
+    if max_polarity < -1 or max_polarity > 1:
+        raise HTTPException(
+            status_code=400, detail="max_polarity must be between -1 and 1"
+        )
+
     try:
         # Call the CommentsHandler's get_comments method to fetch the comments with the specified filters
         comments = await comments_handler.get_comments(

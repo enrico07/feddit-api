@@ -6,3 +6,15 @@ class Comment(BaseModel):
     text: str
     polarity_score: float
     polarity_classification: str
+
+
+class ErrorResponse(BaseModel):
+    detail: str
+
+
+class HealthCheckResponse(BaseModel):
+    status: str
+
+
+class WelcomeMessage(BaseModel):
+    message: str
